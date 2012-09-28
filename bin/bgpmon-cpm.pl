@@ -38,7 +38,7 @@ use BGPmon::CPM::Prefix::Finder qw();
 use Net::IP;
 use Data::Dumper;
 
-our $VERSION = 1.00;
+our $VERSION = 1.02;
 
 #---- Default settings ----
 # These settings are used if the user does not specify the values
@@ -68,9 +68,11 @@ my @domain_names;
 my @ip_addresses;
 my $help = 0;
 my $expand_by_org;
+my $format="default";
 
 #---- Get the command line options. ----
 my $result = GetOptions("domains=s" => \@domain_names,
+                        "format=s"  => \$format,
                         "out=s"     => \$out_filename,
                         "ips=s"     => \@ip_addresses,
                         "syslog" => \$use_syslog,
@@ -78,7 +80,6 @@ my $result = GetOptions("domains=s" => \@domain_names,
                         "logfile=s" => \$log_file,
                         "orgExpansion=i" => \$expand_by_org,
                         "help" => \$help);
-#&print_usage(1) unless ($result);
 &print_usage(1) if (!$result or $help);
 
 @domain_names = split(/,/,join(',',@domain_names));
@@ -176,35 +177,40 @@ foreach my $ip (keys %expanded_set){
      }else{
        $response = "";
      }
-     if($response =~ /Y/ || $response =~ /y/){
-       foreach my $p (@{$expanded_set{$ip}{'nets'}}){
-        $keeper_set{$p}{'search'} = $expanded_set{$ip}{'msg'};
-       }
-      }else{
-        foreach my $p (@{$expanded_set{$ip}{'range'}}){
-          $keeper_set{$p}{'search'} = $expanded_set{$ip}{'msg'};
-        }
-      }
     }
+    if($response =~ /Y/ || $response =~ /y/){
+      foreach my $p (@{$expanded_set{$ip}{'nets'}}){
+       $keeper_set{$p}{'search'} = $expanded_set{$ip}{'msg'};
+      }
+     }else{
+       foreach my $p (@{$expanded_set{$ip}{'range'}}){
+         $keeper_set{$p}{'search'} = $expanded_set{$ip}{'msg'};
+       }
+     }
   }
-
-
 }
 
 ## print out the final results 
-foreach my $p (sort{compare_ips($a,$b)} keys %keeper_set){
-  print $out "$p,";
-  if(defined($keeper_set{$p}{'domains'})){
-    print $out $keeper_set{$p}{'domains'} . ",";
-  }else{
-    print $out ",";
-  }
-  if(defined($keeper_set{$p}{'search'})){
-    print $out $keeper_set{$p}{'search'} . "\n";
-  }else{
+if($format=~/filter/){
+  foreach my $p (sort{compare_ips($a,$b)} keys %keeper_set){
+    print $out "ipv4 $p ms";
     print $out "\n";
-  }
-} 
+  } 
+}else{
+  foreach my $p (sort{compare_ips($a,$b)} keys %keeper_set){
+    print $out "$p,";
+    if(defined($keeper_set{$p}{'domains'})){
+      print $out $keeper_set{$p}{'domains'} . ",";
+    }else{
+      print $out ",";
+    }
+    if(defined($keeper_set{$p}{'search'})){
+      print $out $keeper_set{$p}{'search'} . "\n";
+    }else{
+      print $out "\n";
+    }
+  } 
+}
 close($out);
 1;
 
@@ -250,6 +256,7 @@ sub print_usage{
   print STDERR "Usage: bgpmon-cpm.pl 
         [-domains domain.com,domain.net]
         [-ips 1.2.3.4,1.2.3.5]
+        [-format filer|default]
         [-sylog use syslog to log messages]
         [-loglevel logging level]
         [-orgExpansion [1|2] Default will prompt user]

@@ -1,5 +1,5 @@
 package BGPmon::CPM::Prefix::Finder;
-our $VERSION = 1.00;
+our $VERSION = 1.02;
 
 use 5.010001;
 use strict;
