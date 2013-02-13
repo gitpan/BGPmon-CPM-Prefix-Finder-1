@@ -38,7 +38,7 @@ use BGPmon::CPM::Prefix::Finder qw();
 use Net::IP;
 use Data::Dumper;
 
-our $VERSION = 1.02;
+our $VERSION = 1.03;
 
 #---- Default settings ----
 # These settings are used if the user does not specify the values
@@ -256,10 +256,10 @@ sub print_usage{
   print STDERR "Usage: bgpmon-cpm.pl 
         [-domains domain.com,domain.net]
         [-ips 1.2.3.4,1.2.3.5]
-        [-format filer|default]
+        [-format filter|default]
         [-sylog use syslog to log messages]
         [-loglevel logging level]
-        [-orgExpansion [1|2] Default will prompt user]
+        [-orgExpansion [0|1] Default will prompt user]
         [-logfile /path/to/logfile]\n";
   exit if($exit);
 }

@@ -3,7 +3,7 @@
 
 #########################
 
-use Test::More;
+use Test::More skip_all => "Skipping. Be sure your database is running before manually running tests.";
 use Data::Dumper;
 BEGIN { use_ok('BGPmon::CPM::Prefix::Finder') };
 
