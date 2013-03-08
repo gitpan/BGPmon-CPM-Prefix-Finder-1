@@ -38,7 +38,7 @@ use BGPmon::CPM::Prefix::Finder qw();
 use Net::IP;
 use Data::Dumper;
 
-our $VERSION = 1.03;
+our $VERSION = 1.04;
 
 #---- Default settings ----
 # These settings are used if the user does not specify the values

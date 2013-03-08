@@ -1,5 +1,5 @@
 package BGPmon::CPM::Prefix::Finder;
-our $VERSION = 1.03;
+our $VERSION = 1.04;
 
 use 5.010001;
 use strict;
@@ -413,20 +413,22 @@ sub expandDomainToIPs{
       ## get the SOA for our partial
       $resolver = Net::DNS::Resolver->new(config_file=>"/etc/resolv.conf");
       $response = $resolver->send($partial,'SOA');
-      foreach my $ans ($response->answer){
-        my $a = $ans->name;
-        my $b = $partial;
-        $a =~ s/\.$//;
-        $b =~ s/\.$//;
-        if($ans->type eq "SOA" && $a eq $b){
-          if(!$processedSet{$ans->mname}){
-            if(!exists($processQ{$ans->mname})){
-              $processQ{$ans->mname}{'MX'}=$processQ{$partial}{'MX'};
-              $processQ{$ans->mname}{'SOA'}=$processQ{$partial}{'SOA'};
-              $processQ{$ans->mname}{'NS'}=$processQ{$partial}{'NS'};
-              $processQ{$ans->mname}{'CNAME'}=$processQ{$partial}{'CNAME'};
+      if(defined($response)){
+        foreach my $ans ($response->answer){
+          my $a = $ans->name;
+          my $b = $partial;
+          $a =~ s/\.$//;
+          $b =~ s/\.$//;
+          if($ans->type eq "SOA" && $a eq $b){
+            if(!$processedSet{$ans->mname}){
+              if(!exists($processQ{$ans->mname})){
+                $processQ{$ans->mname}{'MX'}=$processQ{$partial}{'MX'};
+                $processQ{$ans->mname}{'SOA'}=$processQ{$partial}{'SOA'};
+                $processQ{$ans->mname}{'NS'}=$processQ{$partial}{'NS'};
+                $processQ{$ans->mname}{'CNAME'}=$processQ{$partial}{'CNAME'};
+              }
+              $processQ{$ans->mname}{'search'}{$partial . " SOA "} = 1;
             }
-            $processQ{$ans->mname}{'search'}{$partial . " SOA "} = 1;
           }
         }
       }
